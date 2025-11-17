@@ -1,0 +1,144 @@
+name: Setup LabyMod 4 Project Structure
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  setup-project:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Java 21
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+        
+    - name: Create complete project structure
+      run: |
+        echo "=== Creating complete LabyMod 4 project structure ==="
+        
+        # Создаем основную структуру папок
+        mkdir -p src/main/java/com/axmed555/labyvisuals
+        mkdir -p src/main/resources
+        mkdir -p src/test/java
+        
+        # Перемещаем Java файлы в правильные папки
+        echo "=== Moving Java files to correct locations ==="
+        if [ -f "LabyVisualsAddon.java" ]; then
+          mv LabyVisualsAddon.java src/main/java/com/axmed555/labyvisuals/
+          echo "Moved LabyVisualsAddon.java"
+        fi
+        
+        if [ -f "VisualEffects.java" ]; then
+          mv VisualEffects.java src/main/java/com/axmed555/labyvisuals/
+          echo "Moved VisualEffects.java"
+        fi
+        
+        if [ -f "KeyHandler.java" ]; then
+          mv KeyHandler.java src/main/java/com/axmed555/labyvisuals/
+          echo "Moved KeyHandler.java"
+        fi
+        
+        if [ -f "Config.java" ]; then
+          mv Config.java src/main/java/com/axmed555/labyvisuals/
+          echo "Moved Config.java"
+        fi
+        
+        # Создаем build.gradle.kts
+        echo "=== Creating build.gradle.kts ==="
+        cat > build.gradle.kts << 'EOF'
+plugins {
+    id("java")
+    id("net.labymod.addon") version "0.2.9"
+}
+
+group = "com.axmed555"
+version = "1.0.0"
+
+labymod {
+    addonInfo {
+        namespace = "labyvisuals"
+        displayName = "LabyVisuals"
+        author = "axmed555"
+        description = "Visual effects addon for LabyMod 4"
+        minecraftVersion = "1.20.1"
+    }
+    productionRelease()
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Add dependencies here if needed
+}
+
+tasks.withType<JavaCompile> {
+    options.encoding = "UTF-8"
+}
+EOF
+
+        # Создаем settings.gradle.kts
+        echo "=== Creating settings.gradle.kts ==="
+        cat > settings.gradle.kts << 'EOF'
+pluginManagement {
+    repositories {
+        maven("https://repo.labymod.net/releases/") {
+            name = "LabyMod"
+        }
+        gradlePluginPortal()
+        mavenCentral()
+    }
+}
+
+rootProject.name = "labyvisuals-addon"
+EOF
+
+        # Создаем addon.json
+        echo "=== Creating addon.json ==="
+        cat > src/main/resources/addon.json << 'EOF'
+{
+  "schema": 1,
+  "name": "LabyVisuals",
+  "version": "1.0.0",
+  "author": "axmed555",
+  "description": "Visual effects addon for LabyMod 4",
+  "main": "com.axmed555.labyvisuals.LabyVisualsAddon",
+  "minecraft": "1.20.1"
+}
+EOF
+
+        # Создаем .gitignore
+        echo "=== Creating .gitignore ==="
+        cat > .gitignore << 'EOF'
+.gradle/
+build/
+.idea/
+*.iml
+.DS_Store
+EOF
+
+        echo "=== Project structure created ==="
+        find . -type f -name "*.java" -o -name "*.kts" -o -name "*.json" | sort
+        
+    - name: Build project
+      run: gradle clean build --no-daemon --stacktrace
+        
+    - name: Upload built JAR
+      uses: actions/upload-artifact@v4
+      with:
+        name: labyvisuals-addon
+        path: build/libs/*.jar
+        retention-days: 30
+        
+    - name: Show final structure
+      run: |
+        echo "=== Final project structure ==="
+        find . -type f -name "*.java" -o -name "*.kts" -o -name "*.json" | sort
