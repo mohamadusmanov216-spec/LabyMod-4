@@ -19,25 +19,25 @@ jobs:
         java-version: '21'
         distribution: 'temurin'
         
-    - name: Create complete project structure
+    - name: Create project structure
       run: |
-        echo "=== Creating complete LabyMod 4 project structure ==="
+        echo "=== Creating LabyMod 4 project structure ==="
         
-        # Создаем основную структуру папок
+        # Создаем папки
         mkdir -p src/main/java/com/axmed555/labyvisuals
         mkdir -p src/main/resources
-        mkdir -p src/test/java
         
-        # Перемещаем Java файлы в правильные папки
-        echo "=== Moving Java files to correct locations ==="
+        # Перемещаем Java файлы
+        echo "=== Moving Java files ==="
         [ -f "LabyVisualsAddon.java" ] && mv LabyVisualsAddon.java src/main/java/com/axmed555/labyvisuals/ && echo "Moved LabyVisualsAddon.java"
         [ -f "VisualEffects.java" ] && mv VisualEffects.java src/main/java/com/axmed555/labyvisuals/ && echo "Moved VisualEffects.java"
         [ -f "KeyHandler.java" ] && mv KeyHandler.java src/main/java/com/axmed555/labyvisuals/ && echo "Moved KeyHandler.java"
         [ -f "Config.java" ] && mv Config.java src/main/java/com/axmed555/labyvisuals/ && echo "Moved Config.java"
         
-        # Создаем build.gradle.kts простым способом
+    - name: Create build.gradle.kts
+      run: |
         echo "=== Creating build.gradle.kts ==="
-        cat > build.gradle.kts << 'BUILD_EOF'
+        cat << 'EOF' > build.gradle.kts
 plugins {
     id("java")
     id("net.labymod.addon") version "0.2.9"
@@ -60,11 +60,12 @@ labymod {
 repositories {
     mavenCentral()
 }
-BUILD_EOF
+EOF
 
-        # Создаем settings.gradle.kts
+    - name: Create settings.gradle.kts
+      run: |
         echo "=== Creating settings.gradle.kts ==="
-        cat > settings.gradle.kts << 'SETTINGS_EOF'
+        cat << 'EOF' > settings.gradle.kts
 pluginManagement {
     repositories {
         maven("https://repo.labymod.net/releases/") {
@@ -76,12 +77,13 @@ pluginManagement {
 }
 
 rootProject.name = "labyvisuals-addon"
-SETTINGS_EOF
+EOF
 
-        # Создаем addon.json
+    - name: Create addon.json
+      run: |
         echo "=== Creating addon.json ==="
         mkdir -p src/main/resources
-        cat > src/main/resources/addon.json << 'ADDON_EOF'
+        cat << 'EOF' > src/main/resources/addon.json
 {
   "schema": 1,
   "name": "LabyVisuals",
@@ -91,11 +93,8 @@ SETTINGS_EOF
   "main": "com.axmed555.labyvisuals.LabyVisualsAddon",
   "minecraft": "1.20.1"
 }
-ADDON_EOF
+EOF
 
-        echo "=== Project structure created ==="
-        find . -type f -name "*.java" -o -name "*.kts" -o -name "*.json" | sort
-        
     - name: Build project
       run: gradle clean build --no-daemon --stacktrace
         
@@ -106,9 +105,7 @@ ADDON_EOF
         path: build/libs/*.jar
         retention-days: 30
         
-    - name: Show final structure
+    - name: Show structure
       run: |
-        echo "=== Final project structure ==="
-        find . -type f -name "*.java" -o -name "*.kts" -o -name "*.json" | sort
-        echo "=== Java files ==="
-        find src -name "*.java" | head -10
+        echo "=== Final structure ==="
+        find . -name "*.java" -o -name "*.kts" -o -name "*.json" | sort
