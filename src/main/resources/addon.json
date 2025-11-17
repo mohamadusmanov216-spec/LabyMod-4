@@ -1,9 +1,0 @@
-{
-  "schema": 1,
-  "name": "LabyVisuals",
-  "version": "1.0.0",
-  "author": "axmed555",
-  "description": "Visual effects addon for LabyMod 4",
-  "main": "com.axmed555.labyvisuals.LabyVisualsAddon",
-  "minecraft": "1.20.1"
-}
