@@ -1,0 +1,101 @@
+name: Build LabyMod 4 Addon
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Java 21
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+        
+    - name: Setup project structure
+      run: |
+        echo "=== Creating LabyMod 4 project structure ==="
+        # Создаем необходимые файлы если их нет
+        if [ ! -f build.gradle.kts ]; then
+          echo "Creating build.gradle.kts..."
+          cat > build.gradle.kts << 'EOF'
+          plugins {
+              id("java")
+              id("net.labymod.addon") version "0.2.9"
+          }
+          
+          group = "com.axmed555"
+          version = "1.0.0"
+          
+          labymod {
+              addonInfo {
+                  namespace = "labyvisuals"
+                  displayName = "LabyVisuals"
+                  author = "axmed555"
+                  description = "Visual effects addon for LabyMod 4"
+                  minecraftVersion = "1.20.1"
+              }
+              productionRelease()
+          }
+          
+          repositories {
+              mavenCentral()
+          }
+          EOF
+        fi
+        
+        if [ ! -f settings.gradle.kts ]; then
+          echo "Creating settings.gradle.kts..."
+          cat > settings.gradle.kts << 'EOF'
+          pluginManagement {
+              repositories {
+                  maven("https://repo.labymod.net/releases/") {
+                      name = "LabyMod"
+                  }
+                  gradlePluginPortal()
+                  mavenCentral()
+              }
+          }
+          rootProject.name = "labyvisuals-addon"
+          EOF
+        fi
+        
+        if [ ! -f src/main/resources/addon.json ]; then
+          echo "Creating addon.json..."
+          mkdir -p src/main/resources
+          cat > src/main/resources/addon.json << 'EOF'
+          {
+            "schema": 1,
+            "name": "LabyVisuals",
+            "version": "1.0.0",
+            "author": "axmed555",
+            "description": "Visual effects addon for LabyMod 4",
+            "main": "com.axmed555.labyvisuals.LabyVisualsAddon",
+            "minecraft": "1.20.1"
+          }
+          EOF
+        fi
+        
+    - name: Build with Gradle
+      run: |
+        # Используем Gradle Wrapper или скачиваем Gradle
+        if [ -f ./gradlew ]; then
+          chmod +x ./gradlew
+          ./gradlew clean build --no-daemon --stacktrace
+        else
+          gradle clean build --no-daemon --stacktrace
+        fi
+        
+    - name: Upload Addon
+      uses: actions/upload-artifact@v4
+      with:
+        name: labyvisuals-addon
+        path: build/libs/*.jar
+        retention-days: 30
