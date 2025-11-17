@@ -1,0 +1,19 @@
+name: Build Addon Structure
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+    - name: Build JAR structure
+      run: |
+        cd labyvisuals-addon
+        gradle clean jar --stacktrace
+    - uses: actions/upload-artifact@v4
+      with:
+        name: addon-structure
+        path: labyvisuals-addon/build/libs/*.jar
