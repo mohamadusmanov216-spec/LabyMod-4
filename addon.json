@@ -1,0 +1,8 @@
+{
+  "uuid": "a1b2c3d4-1234-5678-9101-axmed555visuals",
+  "name": "LabyVisuals",
+  "mainClass": "com.axmed555.labyvisuals.LabyVisualsAddon",
+  "description": "Advanced visual effects for LabyMod",
+  "version": "1.0.0",
+  "author": "axmed555"
+}
